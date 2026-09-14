@@ -49,7 +49,7 @@ func (s *CharacterService) DeleteCharacterById(id uint) error {
 	return nil
 }
 
-func (s *CharacterService) UpdateCharacterById(id uint, character models.Character) (*models.Character, error) {
+func (s *CharacterService) UpdateCharacterById(id uint, character *models.Character) (*models.Character, error) {
 	existingCharacter, err := s.GetCharacterById(id)
 	if err != nil {
 		return nil, err
