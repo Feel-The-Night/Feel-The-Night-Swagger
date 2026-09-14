@@ -8,6 +8,7 @@ import (
 	"github.com/kisalto/Feel-The-Night-Swagger/internal/dto"
 	"github.com/kisalto/Feel-The-Night-Swagger/internal/models"
 	"github.com/kisalto/Feel-The-Night-Swagger/internal/services"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -29,6 +30,11 @@ func NewCharacterHandler(characterService *services.CharacterService) *Character
 // @Success 201 {object} models.Character
 // @Router /character [post]
 func (h *CharacterHandler) CreateCharacter(c *gin.Context) {
+	zap.L().Info("[CharacterHandler] CreateCharacter",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var input dto.CreateCharacterInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -52,13 +58,18 @@ func (h *CharacterHandler) CreateCharacter(c *gin.Context) {
 }
 
 // GetCharacterById godoc
-// @Summary      Buscar usuário por ID
+// @Summary      Buscar personagem por ID
 // @Tags         Character
 // @Produce      json
-// @Param        id   path      int  true  "ID do usuário" minimum(1)
+// @Param        id   path      int  true  "ID do personagem" minimum(1)
 // @Success      200  {object}  dto.CharacterResponse
 // @Router       /characters/{id} [get]
 func (h *CharacterHandler) GetCharacterById(c *gin.Context) {
+	zap.L().Info("[CharacterHandler] GetCharacterById",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var input dto.CharacterIDInput
 
 	if err := c.ShouldBindUri(&input); err != nil {
@@ -69,7 +80,7 @@ func (h *CharacterHandler) GetCharacterById(c *gin.Context) {
 	character, err := h.characterService.GetCharacterById(input.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, dto.CharacterErrorResponse{Error: "usuário não encontrado"})
+			c.JSON(http.StatusNotFound, dto.CharacterErrorResponse{Error: "personagem não encontrado"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, dto.CharacterErrorResponse{Error: err.Error()})
@@ -88,13 +99,18 @@ func (h *CharacterHandler) GetCharacterById(c *gin.Context) {
 }
 
 // DeleteCharacterById godoc
-// @Summary      Deletar usuário por ID
+// @Summary      Deletar personagem por ID
 // @Tags         Character
 // @Produce      json
-// @Param        id   path      int  true  "ID do usuário" minimum(1)
+// @Param        id   path      int  true  "ID do personagem" minimum(1)
 // @Success      200  {object}  map[string]string
 // @Router       /characters/{id} [delete]
 func (h *CharacterHandler) DeleteCharacterById(c *gin.Context) {
+	zap.L().Info("[CharacterHandler] DeleteCharacterById",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var input dto.CharacterIDInput
 
 	if err := c.ShouldBindUri(&input); err != nil {
@@ -104,7 +120,7 @@ func (h *CharacterHandler) DeleteCharacterById(c *gin.Context) {
 
 	if err := h.characterService.DeleteCharacterById(input.ID); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, dto.CharacterErrorResponse{Error: "usuário não encontrado"})
+			c.JSON(http.StatusNotFound, dto.CharacterErrorResponse{Error: "personagem não encontrado"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, dto.CharacterErrorResponse{Error: err.Error()})
@@ -112,19 +128,24 @@ func (h *CharacterHandler) DeleteCharacterById(c *gin.Context) {
 	}
 
 	// Retorna 200 OK com uma mensagem em formato JSON
-	c.JSON(http.StatusOK, gin.H{"message": "usuário deletado com sucesso"})
+	c.JSON(http.StatusOK, gin.H{"message": "personagem deletado com sucesso"})
 }
 
 // UpdateCharacter godoc
-// @Summary      Atualizar dados do usuário
+// @Summary      Atualizar dados do personagem
 // @Tags         Character
 // @Accept       json
 // @Produce      json
-// @Param        id    path      int             true  "ID do usuário" minimum(1)
+// @Param        id    path      int             true  "ID do personagem" minimum(1)
 // @Param        body  body      dto.UpdateCharacter  true  "Dados para atualização"
 // @Success      200   {object}  dto.CharacterResponse
 // @Router       /characters/{id} [patch]
 func (h *CharacterHandler) UpdateCharacter(c *gin.Context) {
+	zap.L().Info("[CharacterHandler] UpdateCharacter",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var uriInput dto.CharacterIDInput
 	var bodyInput dto.UpdateCharacter
 
@@ -150,7 +171,7 @@ func (h *CharacterHandler) UpdateCharacter(c *gin.Context) {
 	updatedCharacter, err := h.characterService.UpdateCharacterById(uriInput.ID, &characterModel)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, dto.CharacterErrorResponse{Error: "usuário não encontrado"})
+			c.JSON(http.StatusNotFound, dto.CharacterErrorResponse{Error: "personagem não encontrado"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, dto.CharacterErrorResponse{Error: err.Error()})

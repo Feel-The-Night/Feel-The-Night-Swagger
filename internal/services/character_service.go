@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/kisalto/Feel-The-Night-Swagger/internal/models"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -68,15 +69,23 @@ func (s *CharacterService) UpdateCharacterById(id uint, character *models.Charac
 	if character.Name != "" {
 		updates["name"] = character.Name
 	}
-	if character.Name != "" {
+	if character.Description != "" {
 		updates["description"] = character.Description
 	}
-	if character.Name != "" {
+	if character.Type != "" {
 		updates["type"] = character.Type
 	}
+	if character.ImageURL != "" {
+		updates["image_url"] = character.ImageURL
+	}
+
+	zap.L().Info("[CharacterService] UpdateCharacter",
+		zap.Any("updates", updates),
+		zap.Any("updates_length", len(updates)),
+	)
 
 	if len(updates) == 0 {
-		return existingCharacter, nil
+		return nil, errors.New("Nenhum dado recebido")
 	}
 
 	if err := s.db.Model(existingCharacter).Updates(updates).Error; err != nil {

@@ -8,7 +8,7 @@ type CreateCharacterInput struct {
 }
 
 type CharacterIDInput struct {
-	ID uint `uri:"id" binding:"required"`
+	ID uint `uri:"id" binding:"required,min=1"`
 }
 
 type UpdateCharacter struct {

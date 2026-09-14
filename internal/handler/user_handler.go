@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 
 	dto "github.com/kisalto/Feel-The-Night-Swagger/internal/dto"
@@ -30,6 +31,11 @@ func NewUserHandler(userService *services.UserService) *UserHandler {
 // @Success      201   {object}  models.User
 // @Router       /users [post]
 func (h *UserHandler) CreateUser(c *gin.Context) {
+	zap.L().Info("[UserHandler] CreateUser",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var input dto.CreateUserInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -60,6 +66,11 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 // @Success      200  {object}  dto.UserResponse
 // @Router       /users/{id} [get]
 func (h *UserHandler) GetUserById(c *gin.Context) {
+	zap.L().Info("[UserHandler] GetUserById",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var input dto.UserIDInput
 
 	if err := c.ShouldBindUri(&input); err != nil {
@@ -100,6 +111,11 @@ func (h *UserHandler) GetUserById(c *gin.Context) {
 // @Success      200  {object}  map[string]string
 // @Router       /users/{id} [delete]
 func (h *UserHandler) DeleteUserById(c *gin.Context) {
+	zap.L().Info("[UserHandler] DeleteUserById",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var input dto.UserIDInput
 
 	if err := c.ShouldBindUri(&input); err != nil {
@@ -130,6 +146,11 @@ func (h *UserHandler) DeleteUserById(c *gin.Context) {
 // @Success      200   {object}  dto.UserResponse
 // @Router       /users/{id} [patch]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
+	zap.L().Info("[UserHandler] UpdateUser",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var uriInput dto.UserIDInput
 	var bodyInput dto.UpdateUser
 
