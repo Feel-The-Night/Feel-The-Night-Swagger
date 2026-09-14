@@ -24,7 +24,7 @@ type UpdateUser struct {
 }
 
 // Extras
-type ErrorResponse struct {
+type UserErrorResponse struct {
 	Error string `json:"error" example:"usuário não encontrado"`
 }
 

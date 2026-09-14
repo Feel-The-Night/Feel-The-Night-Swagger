@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 
 	// Importe o pacote docs sem o "_" para poder acessar a variável SwaggerInfo
 	"github.com/kisalto/Feel-The-Night-Swagger/docs"
@@ -19,8 +19,15 @@ import (
 // @description     API para gerenciamento de guias, eventos e personagens.
 // @BasePath        /
 func main() {
+	logger, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+	zap.ReplaceGlobals(logger)
+
 	if err := godotenv.Load(); err != nil {
-		log.Println("WARN: Arquivo .env não encontrado, lendo variáveis de ambiente do sistema.")
+		zap.L().Warn("Arquivo .env não encontrado, lendo variáveis de ambiente do sistema.")
 	}
 
 	// 1. Tratamento da Porta
@@ -46,19 +53,19 @@ func main() {
 	}
 
 	// 3. Conexão com o Banco de Dados
-	log.Println("Iniciando conexão com o banco de dados...")
+	zap.L().Info("Iniciando conexão com o banco de dados...")
 	if err := database.Connect(); err != nil {
-		log.Fatalf("Erro crítico ao inicializar o banco: %v", err)
+		zap.L().Fatal("Erro crítico ao inicializar o banco", zap.Error(err))
 	}
 
 	// 4. Carrega Rotas
-	routes := handler.SetupRoutes()
+	routes := handler.Setup()
 
 	// 5. Inicia o Servidor
 	serverPort := fmt.Sprintf(":%s", port)
-	log.Printf("Servidor rodando na porta %s\n", serverPort)
+	zap.L().Info("Servidor rodando na porta", zap.String("port", serverPort))
 
 	if err := http.ListenAndServe(serverPort, routes); err != nil {
-		log.Fatalf("Erro ao iniciar o servidor: %v", err)
+		zap.L().Fatal("Erro ao iniciar o servidor", zap.Error(err))
 	}
 }

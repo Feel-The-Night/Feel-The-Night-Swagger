@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 
 	dto "github.com/kisalto/Feel-The-Night-Swagger/internal/dto"
@@ -28,9 +29,13 @@ func NewUserHandler(userService *services.UserService) *UserHandler {
 // @Produce      json
 // @Param        user  body      dto.CreateUserInput  true  "Dados do usuário"
 // @Success      201   {object}  models.User
-// @Failure      400   {object}  map[string]string
 // @Router       /users [post]
 func (h *UserHandler) CreateUser(c *gin.Context) {
+	zap.L().Info("[UserHandler] CreateUser",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var input dto.CreateUserInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -59,23 +64,27 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      int  true  "ID do usuário" minimum(1)
 // @Success      200  {object}  dto.UserResponse
-// @Failure      404  {object}  dto.ErrorResponse
 // @Router       /users/{id} [get]
 func (h *UserHandler) GetUserById(c *gin.Context) {
+	zap.L().Info("[UserHandler] GetUserById",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var input dto.UserIDInput
 
 	if err := c.ShouldBindUri(&input); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "id inválido"})
+		c.JSON(http.StatusBadRequest, dto.UserErrorResponse{Error: "id inválido"})
 		return
 	}
 
 	user, err := h.userService.GetUserById(input.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "usuário não encontrado"})
+			c.JSON(http.StatusNotFound, dto.UserErrorResponse{Error: "usuário não encontrado"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.UserErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -100,22 +109,26 @@ func (h *UserHandler) GetUserById(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      int  true  "ID do usuário" minimum(1)
 // @Success      200  {object}  map[string]string
-// @Failure      404  {object}  dto.ErrorResponse
 // @Router       /users/{id} [delete]
 func (h *UserHandler) DeleteUserById(c *gin.Context) {
+	zap.L().Info("[UserHandler] DeleteUserById",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var input dto.UserIDInput
 
 	if err := c.ShouldBindUri(&input); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "id inválido"})
+		c.JSON(http.StatusBadRequest, dto.UserErrorResponse{Error: "id inválido"})
 		return
 	}
 
 	if err := h.userService.DeleteUserById(input.ID); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "usuário não encontrado"})
+			c.JSON(http.StatusNotFound, dto.UserErrorResponse{Error: "usuário não encontrado"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.UserErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -131,21 +144,23 @@ func (h *UserHandler) DeleteUserById(c *gin.Context) {
 // @Param        id    path      int             true  "ID do usuário" minimum(1)
 // @Param        body  body      dto.UpdateUser  true  "Dados para atualização"
 // @Success      200   {object}  dto.UserResponse
-// @Failure      400   {object}  dto.ErrorResponse
-// @Failure      404   {object}  dto.ErrorResponse
-// @Failure      500   {object}  dto.ErrorResponse
 // @Router       /users/{id} [patch]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
+	zap.L().Info("[UserHandler] UpdateUser",
+		zap.String("method", c.Request.Method),
+		zap.String("path", c.Request.URL.Path),
+	)
+
 	var uriInput dto.UserIDInput
 	var bodyInput dto.UpdateUser
 
 	if err := c.ShouldBindUri(&uriInput); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "id inválido"})
+		c.JSON(http.StatusBadRequest, dto.UserErrorResponse{Error: "id inválido"})
 		return
 	}
 
 	if err := c.ShouldBindJSON(&bodyInput); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "corpo da requisição inválido"})
+		c.JSON(http.StatusBadRequest, dto.UserErrorResponse{Error: "corpo da requisição inválido"})
 		return
 	}
 
@@ -161,10 +176,10 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	updatedUser, err := h.userService.UpdateUser(uriInput.ID, &userModel)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "usuário não encontrado"})
+			c.JSON(http.StatusNotFound, dto.UserErrorResponse{Error: "usuário não encontrado"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.UserErrorResponse{Error: err.Error()})
 		return
 	}
 
