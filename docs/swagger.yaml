@@ -1,5 +1,18 @@
 basePath: /
 definitions:
+  dto.CharacterResponse:
+    properties:
+      characterID:
+        type: integer
+      description:
+        type: string
+      imageURL:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
   dto.CreateCharacterInput:
     properties:
       description:
@@ -29,6 +42,17 @@ definitions:
     - email
     - nickname
     - password
+    type: object
+  dto.UpdateCharacter:
+    properties:
+      description:
+        type: string
+      imageURL:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
     type: object
   dto.UpdateUser:
     properties:
@@ -175,7 +199,7 @@ info:
   title: Feel The Night API
   version: "1.0"
 paths:
-  /char:
+  /character:
     post:
       consumes:
       - application/json
@@ -195,6 +219,71 @@ paths:
           schema:
             $ref: '#/definitions/models.Character'
       summary: Criar um novo personagem
+      tags:
+      - Character
+  /characters/{id}:
+    delete:
+      parameters:
+      - description: ID do usuário
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deletar usuário por ID
+      tags:
+      - Character
+    get:
+      parameters:
+      - description: ID do usuário
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CharacterResponse'
+      summary: Buscar usuário por ID
+      tags:
+      - Character
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do usuário
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: Dados para atualização
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCharacter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CharacterResponse'
+      summary: Atualizar dados do usuário
       tags:
       - Character
   /users:

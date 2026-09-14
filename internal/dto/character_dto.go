@@ -8,7 +8,7 @@ type CreateCharacterInput struct {
 }
 
 type CharacterIDInput struct {
-	id uint `uri:"id" binding:"required"`
+	ID uint `uri:"id" binding:"required"`
 }
 
 type UpdateCharacter struct {
@@ -18,7 +18,8 @@ type UpdateCharacter struct {
 	Type        string `json:"type"`
 }
 
-type CharErrorResponse struct {
+// Some additional DTOs
+type CharacterErrorResponse struct {
 	Error string `json:"error" example:"Personagem não encontrado"`
 }
 
