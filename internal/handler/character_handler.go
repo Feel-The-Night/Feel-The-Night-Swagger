@@ -28,7 +28,7 @@ func NewCharacterHandler(characterService *services.CharacterService) *Character
 // @Produce json
 // @Param character body dto.CreateCharacterInput true "Dados do Personagem"
 // @Success 201 {object} models.Character
-// @Router /character [post]
+// @Router /characters [post]
 func (h *CharacterHandler) CreateCharacter(c *gin.Context) {
 	zap.L().Info("[CharacterHandler] CreateCharacter",
 		zap.String("method", c.Request.Method),
