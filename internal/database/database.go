@@ -67,24 +67,25 @@ func Connect() error {
 }
 
 func createConstraints() error {
-	constraints := []string{
-		`ALTER TABLE guides ADD CONSTRAINT fk_guides_user
-			FOREIGN KEY (user_id) REFERENCES users(user_id)
-			ON UPDATE CASCADE ON DELETE CASCADE`,
-		`ALTER TABLE guides ADD CONSTRAINT fk_guides_character
-			FOREIGN KEY (character_id) REFERENCES characters(character_id)
-			ON UPDATE CASCADE ON DELETE CASCADE`,
-		`ALTER TABLE events ADD CONSTRAINT fk_events_user
-			FOREIGN KEY (user_id) REFERENCES users(user_id)
-			ON UPDATE CASCADE ON DELETE CASCADE`,
-		`ALTER TABLE last_events ADD CONSTRAINT fk_last_events_event
-			FOREIGN KEY (event_id) REFERENCES events(event_id)
-			ON UPDATE CASCADE ON DELETE CASCADE`,
+	m := DB.Migrator()
+
+	type fk struct {
+		model any
+		field string
 	}
 
-	for _, sql := range constraints {
-		if err := DB.Exec(sql).Error; err != nil {
-			return fmt.Errorf("erro ao criar constraint: %w", err)
+	fks := []fk{
+		{&models.Guide{}, "User"},
+		{&models.Guide{}, "Character"},
+		{&models.Event{}, "User"},
+		{&models.LastEvent{}, "Event"},
+	}
+
+	for _, f := range fks {
+		if !m.HasConstraint(f.model, f.field) {
+			if err := m.CreateConstraint(f.model, f.field); err != nil {
+				return fmt.Errorf("erro criando constraint %s.%s: %w", fmt.Sprintf("%T", f.model), f.field, err)
+			}
 		}
 	}
 	return nil
