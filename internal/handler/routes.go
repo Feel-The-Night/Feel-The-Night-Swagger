@@ -13,7 +13,7 @@ import (
 )
 
 // SetupRoutes registra todas as rotas da sua API
-func SetupRoutes(userHandler *UserHandler, characterHandler *CharacterHandler) *gin.Engine {
+func SetupRoutes(userHandler *UserHandler, characterHandler *CharacterHandler, guideHandler *GuideHandler) *gin.Engine {
 	router := gin.Default()
 
 	// Rota do Swagger
@@ -34,6 +34,12 @@ func SetupRoutes(userHandler *UserHandler, characterHandler *CharacterHandler) *
 	router.DELETE("/characters/:id", characterHandler.DeleteCharacterById)
 	router.PATCH("/characters/:id", characterHandler.UpdateCharacter)
 
+	// Rotas de Guias
+	router.POST("/guides", guideHandler.CreateGuide)
+	router.GET("/guides/:id", guideHandler.GetGuideById)
+	router.DELETE("/guides/:id", guideHandler.DeleteGuideById)
+	router.PATCH("/guides/:id", guideHandler.UpdateGuide)
+
 	return router
 }
 
@@ -47,7 +53,11 @@ func Setup() *gin.Engine {
 	characterService := services.NewCharacterService(database.DB)
 	characterHandler := NewCharacterHandler(characterService)
 
-	return SetupRoutes(userHandler, characterHandler)
+	// Guides
+	guideService := services.NewGuideService(database.DB)
+	guideHandler := NewGuideHandler(guideService)
+
+	return SetupRoutes(userHandler, characterHandler, guideHandler)
 }
 
 func HealthCheckHandler(c *gin.Context) {

@@ -2,41 +2,40 @@ package dto
 
 import "time"
 
-// CreateUserInput representa apenas os dados permitidos no POST /users
+// CreateUserInput representa os dados necessários para criar um usuário.
+// @Title CreateUserInput
 type CreateUserInput struct {
-	Nickname  string `json:"nickname" binding:"required"`
-	Email     string `json:"email" binding:"required"`
-	DiscordID string `json:"discordID"`
-	Password  string `json:"password" binding:"required"`
+	Nickname  string `json:"nickname" binding:"required,min=3,max=30"`
+	Email     string `json:"email" binding:"required,email"`
+	DiscordID string `json:"discord_id"`
+	Password  string `json:"password" binding:"required,min=6"`
 }
 
-// UserIDInput valida o parâmetro :id genérico na URL para GET, DELETE, etc.
+// UserIDInput valida o parâmetro :id na URL.
+// @Title UserIDInput
 type UserIDInput struct {
 	ID uint `uri:"id" binding:"required,min=1"`
 }
 
-// UpdateUserInput permite atualizar campos individualmente (todos opcionais)
-type UpdateUser struct {
-	Nickname  string `json:"nickname"`
-	Email     string `json:"email"`
-	DiscordID string `json:"discordID"`
-	Password  string `json:"password"`
+// UpdateUserInput permite atualização parcial de dados do usuário.
+// @Title UpdateUserInput
+type UpdateUserInput struct {
+	Nickname  string `json:"nickname" binding:"omitempty,min=3,max=30"`
+	Email     string `json:"email" binding:"omitempty,email"`
+	DiscordID string `json:"discord_id"`
+	Password  string `json:"password" binding:"omitempty,min=6"`
 }
 
-// Extras
-type UserErrorResponse struct {
-	Error string `json:"error" example:"usuário não encontrado"`
-}
-
-// UserResponse representa os dados do usuário retornados nas respostas HTTP (sem dados sensíveis)
+// UserResponse representa a resposta pública do usuário (sem a senha).
+// @Title UserResponse
 type UserResponse struct {
-	UserID           uint      `json:"userID"`
+	UserID           uint      `json:"user_id"`
 	Nickname         string    `json:"nickname"`
 	Email            string    `json:"email"`
-	DiscordID        string    `json:"discordID"`
-	RegistrationDate time.Time `json:"registrationDate"`
-	EventCount       int       `json:"eventCount"`
-	GuideCount       int       `json:"guideCount"`
-	IsModerator      bool      `json:"isModerator"`
-	IsVeteran        bool      `json:"isVeteran"`
+	DiscordID        string    `json:"discord_id,omitempty"`
+	RegistrationDate time.Time `json:"registration_date"`
+	EventCount       int       `json:"event_count"`
+	GuideCount       int       `json:"guide_count"`
+	IsModerator      bool      `json:"is_moderator"`
+	IsVeteran        bool      `json:"is_veteran"`
 }

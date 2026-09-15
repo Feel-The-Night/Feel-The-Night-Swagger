@@ -5,11 +5,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+
 	"github.com/kisalto/Feel-The-Night-Swagger/internal/dto"
 	"github.com/kisalto/Feel-The-Night-Swagger/internal/models"
 	"github.com/kisalto/Feel-The-Night-Swagger/internal/services"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type CharacterHandler struct {
@@ -21,14 +22,14 @@ func NewCharacterHandler(characterService *services.CharacterService) *Character
 }
 
 // CreateCharacter godoc
-// @Summary Criar um novo personagem
-// @Description Cria um novo personagem com os dados informados do body
-// @Tags Character
-// @Accept json
-// @Produce json
-// @Param character body dto.CreateCharacterInput true "Dados do Personagem"
-// @Success 201 {object} models.Character
-// @Router /characters [post]
+// @Summary      Criar um novo personagem
+// @Description  Cria um novo personagem com os dados informados no corpo da requisição.
+// @Tags         Character
+// @Accept       json
+// @Produce      json
+// @Param        character  body      dto.CreateCharacterInput  true  "Dados do Personagem"
+// @Success      201        {object}  dto.CharacterResponse
+// @Router       /characters [post]
 func (h *CharacterHandler) CreateCharacter(c *gin.Context) {
 	zap.L().Info("[CharacterHandler] CreateCharacter",
 		zap.String("method", c.Request.Method),
@@ -38,7 +39,7 @@ func (h *CharacterHandler) CreateCharacter(c *gin.Context) {
 	var input dto.CreateCharacterInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -50,11 +51,19 @@ func (h *CharacterHandler) CreateCharacter(c *gin.Context) {
 	}
 
 	if err := h.characterService.CreateCharacter(&character); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, character)
+	response := dto.CharacterResponse{
+		CharacterID: character.CharacterID,
+		Name:        character.Name,
+		Description: character.Description,
+		Type:        character.Type,
+		ImageURL:    character.ImageURL,
+	}
+
+	c.JSON(http.StatusCreated, response)
 }
 
 // GetCharacterById godoc
@@ -73,17 +82,17 @@ func (h *CharacterHandler) GetCharacterById(c *gin.Context) {
 	var input dto.CharacterIDInput
 
 	if err := c.ShouldBindUri(&input); err != nil {
-		c.JSON(http.StatusBadRequest, dto.CharacterErrorResponse{Error: "id inválido"})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "id inválido"})
 		return
 	}
 
 	character, err := h.characterService.GetCharacterById(input.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, dto.CharacterErrorResponse{Error: "personagem não encontrado"})
+			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "personagem não encontrado"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.CharacterErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -114,20 +123,19 @@ func (h *CharacterHandler) DeleteCharacterById(c *gin.Context) {
 	var input dto.CharacterIDInput
 
 	if err := c.ShouldBindUri(&input); err != nil {
-		c.JSON(http.StatusBadRequest, dto.CharacterErrorResponse{Error: "id inválido"})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "id inválido"})
 		return
 	}
 
 	if err := h.characterService.DeleteCharacterById(input.ID); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, dto.CharacterErrorResponse{Error: "personagem não encontrado"})
+			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "personagem não encontrado"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.CharacterErrorResponse{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	// Retorna 200 OK com uma mensagem em formato JSON
 	c.JSON(http.StatusOK, gin.H{"message": "personagem deletado com sucesso"})
 }
 
@@ -136,8 +144,8 @@ func (h *CharacterHandler) DeleteCharacterById(c *gin.Context) {
 // @Tags         Character
 // @Accept       json
 // @Produce      json
-// @Param        id    path      int             true  "ID do personagem" minimum(1)
-// @Param        body  body      dto.UpdateCharacter  true  "Dados para atualização"
+// @Param        id    path      int                      true  "ID do personagem" minimum(1)
+// @Param        body  body      dto.UpdateCharacterInput true  "Dados para atualização"
 // @Success      200   {object}  dto.CharacterResponse
 // @Router       /characters/{id} [patch]
 func (h *CharacterHandler) UpdateCharacter(c *gin.Context) {
@@ -147,19 +155,18 @@ func (h *CharacterHandler) UpdateCharacter(c *gin.Context) {
 	)
 
 	var uriInput dto.CharacterIDInput
-	var bodyInput dto.UpdateCharacter
+	var bodyInput dto.UpdateCharacterInput
 
 	if err := c.ShouldBindUri(&uriInput); err != nil {
-		c.JSON(http.StatusBadRequest, dto.CharacterErrorResponse{Error: "id inválido"})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "id inválido"})
 		return
 	}
 
 	if err := c.ShouldBindJSON(&bodyInput); err != nil {
-		c.JSON(http.StatusBadRequest, dto.CharacterErrorResponse{Error: "corpo da requisição inválido"})
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "corpo da requisição inválido"})
 		return
 	}
 
-	// Mapeia o DTO para a struct do Model
 	characterModel := models.Character{
 		Name:        bodyInput.Name,
 		Description: bodyInput.Description,
@@ -167,14 +174,17 @@ func (h *CharacterHandler) UpdateCharacter(c *gin.Context) {
 		ImageURL:    bodyInput.ImageURL,
 	}
 
-	// Passa o ID e a referência do Model para a Service
 	updatedCharacter, err := h.characterService.UpdateCharacterById(uriInput.ID, &characterModel)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, dto.CharacterErrorResponse{Error: "personagem não encontrado"})
+			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "personagem não encontrado"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.CharacterErrorResponse{Error: err.Error()})
+		if err.Error() == "nenhum dado recebido para atualização" {
+			c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: err.Error()})
 		return
 	}
 
