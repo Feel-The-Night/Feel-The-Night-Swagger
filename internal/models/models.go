@@ -17,7 +17,7 @@ type User struct {
 	IsModerator      bool      `gorm:"default:false"`
 	IsVeteran        bool      `gorm:"default:false"`
 
-	// Relationships (Has Many)
+	// Has many Events and Guides
 	Events []Event `gorm:"foreignKey:UserID"`
 	Guides []Guide `gorm:"foreignKey:UserID"`
 }
@@ -32,7 +32,7 @@ type Character struct {
 	ImageURL    string `gorm:"size:255"`
 	Type        string `gorm:"size:15;not null"`
 
-	// Relationships (Has Many)
+	// Has many guides
 	Guides []Guide `gorm:"foreignKey:CharacterID"`
 }
 
@@ -50,13 +50,13 @@ type Guide struct {
 	Likes        int       `gorm:"default:0"`
 	Dislikes     int       `gorm:"default:0"`
 
-	// Foreign Keys (Obrigatórias)
+	// Foreign Keys (Belongs to User and Character)
 	UserID      uint `gorm:"not null"`
 	CharacterID uint `gorm:"not null"`
 
 	// Relationships (Belongs To)
-	User      User      `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	Character Character `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	User      User      `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Character Character `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func (Guide) TableName() string { return "guides" }
@@ -69,11 +69,13 @@ type Event struct {
 	BannerURL   string    `gorm:"size:255"`
 	Day         time.Time `gorm:"type:date;not null"`
 
-	// Foreign Key
+	// Foreign Key (Belongs to User)
 	UserID uint `gorm:"not null"`
 
-	// Relationships
-	User       User        `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	// Relationships (Belongs To)
+	User User `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+
+	// Has many LastEvents
 	LastEvents []LastEvent `gorm:"foreignKey:EventID"`
 }
 
@@ -84,11 +86,11 @@ type LastEvent struct {
 	LastEventID uint   `gorm:"primaryKey"`
 	Title       string `gorm:"size:75;not null"`
 
-	// Foreign Key
+	// Foreign Key (Belongs to Event)
 	EventID uint `gorm:"not null"`
 
-	// Relationships
-	Event Event `gorm:"foreignKey:EventID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	// Relationships (Belongs To)
+	Event Event `gorm:"foreignKey:EventID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func (LastEvent) TableName() string { return "last_events" }
