@@ -18,8 +18,8 @@ type User struct {
 	IsVeteran        bool      `gorm:"default:false"`
 
 	// Has many Events and Guides
-	Events []Event
-	Guides []Guide
+	Events []Event `gorm:"foreignKey:UserID"`
+	Guides []Guide `gorm:"foreignKey:UserID"`
 }
 
 func (User) TableName() string { return "users" }
@@ -33,7 +33,7 @@ type Character struct {
 	Type        string `gorm:"size:15;not null"`
 
 	// Has many guides
-	Guides []Guide
+	Guides []Guide `gorm:"foreignKey:CharacterID"`
 }
 
 func (Character) TableName() string { return "characters" }
@@ -51,8 +51,12 @@ type Guide struct {
 	Dislikes     int       `gorm:"default:0"`
 
 	// Foreign Keys (Belongs to User and Character)
-	UserID      uint
-	CharacterID uint
+	UserID      uint `gorm:"not null"`
+	CharacterID uint `gorm:"not null"`
+
+	// Relationships (Belongs To)
+	User      User      `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Character Character `gorm:"foreignKey:CharacterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func (Guide) TableName() string { return "guides" }
@@ -66,10 +70,13 @@ type Event struct {
 	Day         time.Time `gorm:"type:date;not null"`
 
 	// Foreign Key (Belongs to User)
-	UserID uint
+	UserID uint `gorm:"not null"`
+
+	// Relationships (Belongs To)
+	User User `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	// Has many LastEvents
-	LastEvents []LastEvent
+	LastEvents []LastEvent `gorm:"foreignKey:EventID"`
 }
 
 func (Event) TableName() string { return "events" }
@@ -80,7 +87,10 @@ type LastEvent struct {
 	Title       string `gorm:"size:75;not null"`
 
 	// Foreign Key (Belongs to Event)
-	EventID uint
+	EventID uint `gorm:"not null"`
+
+	// Relationships (Belongs To)
+	Event Event `gorm:"foreignKey:EventID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func (LastEvent) TableName() string { return "last_events" }
