@@ -5,10 +5,10 @@ import "time"
 // CreateEventInput representa os dados para criação de um guia.
 // @Title CreateEventInput
 type CreateEventInput struct {
-	Title       string    `json:"title" binding:"required"`
-	Description string    `json:"description" binding:"required"`
-	BannerURL   string    `json:"banner_url" binding:"omitempty,url"`
-	Day         time.Time `json:"day" binding:"required"`
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	BannerURL   string `json:"banner_url" binding:"omitempty,url"`
+	Day         string `json:"day" binding:"required"`
 
 	// Temporário até implementar autenticação/contexto
 	UserID uint `json:"user_id" binding:"required,min=1"`

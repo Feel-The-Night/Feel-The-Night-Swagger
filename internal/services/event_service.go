@@ -21,6 +21,7 @@ func (s *EventService) CreateEvent(event *models.Event) error {
 
 func (s *EventService) GetEventById(id uint) (*models.Event, error) {
 	var event models.Event
+
 	if err := s.db.First(&event, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err

@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -43,11 +44,17 @@ func (h *EventHandler) CreateEvent(c *gin.Context) {
 		return
 	}
 
+	data, err := time.Parse("02/01/2006", input.Day)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+	}
+
 	event := models.Event{
 		Title:       input.Title,
 		Description: input.Description,
 		BannerURL:   input.BannerURL,
-		Day:         input.Day,
+		Day:         data,
+		UserID:      input.UserID,
 	}
 
 	if err := h.eventService.CreateEvent(&event); err != nil {
