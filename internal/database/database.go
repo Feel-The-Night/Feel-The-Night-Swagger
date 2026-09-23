@@ -58,56 +58,34 @@ func Connect() error {
 		return fmt.Errorf("falha ao executar o AutoMigrate: %w", err)
 	}
 
-	// if err := createConstraints(); err != nil {
-	// 	return fmt.Errorf("falha ao criar constraints: %w", err)
-	// }
+	if err := createConstraints(); err != nil {
+		return fmt.Errorf("falha ao criar constraints: %w", err)
+	}
 
 	fmt.Println("Conexão com o banco de dados e migrações concluídas com sucesso!")
 	return nil
 }
 
 func createConstraints() error {
-	constraints := []string{
-		`DO $$ 
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_guides_user') THEN
-            ALTER TABLE guides ADD CONSTRAINT fk_guides_user
-                FOREIGN KEY (user_id) REFERENCES users(user_id)
-                ON UPDATE CASCADE ON DELETE CASCADE;
-        END IF;
-    END $$;`,
+	m := DB.Migrator()
 
-		`DO $$ 
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_guides_character') THEN
-            ALTER TABLE guides ADD CONSTRAINT fk_guides_character
-                FOREIGN KEY (character_id) REFERENCES characters(character_id)
-                ON UPDATE CASCADE ON DELETE CASCADE;
-        END IF;
-    END $$;`,
-
-		`DO $$ 
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_events_user') THEN
-            ALTER TABLE events ADD CONSTRAINT fk_events_user
-                FOREIGN KEY (user_id) REFERENCES users(user_id)
-                ON UPDATE CASCADE ON DELETE CASCADE;
-        END IF;
-    END $$;`,
-
-		`DO $$ 
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_last_events_event') THEN
-            ALTER TABLE last_events ADD CONSTRAINT fk_last_events_event
-                FOREIGN KEY (event_id) REFERENCES events(event_id)
-                ON UPDATE CASCADE ON DELETE CASCADE;
-        END IF;
-    END $$;`,
+	type fk struct {
+		model any
+		field string
 	}
 
-	for _, sql := range constraints {
-		if err := DB.Exec(sql).Error; err != nil {
-			return fmt.Errorf("erro ao criar constraint: %w", err)
+	fks := []fk{
+		{&models.Guide{}, "User"},
+		{&models.Guide{}, "Character"},
+		{&models.Event{}, "User"},
+		{&models.LastEvent{}, "Event"},
+	}
+
+	for _, f := range fks {
+		if !m.HasConstraint(f.model, f.field) {
+			if err := m.CreateConstraint(f.model, f.field); err != nil {
+				return fmt.Errorf("erro criando constraint %s.%s: %w", fmt.Sprintf("%T", f.model), f.field, err)
+			}
 		}
 	}
 	return nil

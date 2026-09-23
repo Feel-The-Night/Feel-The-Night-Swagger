@@ -25,8 +25,8 @@ type User struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	// Has many Events and Guides
-	Events []Event `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	Guides []Guide `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Events []Event `gorm:"constraint:OnUpdate:CASCADE"`
+	Guides []Guide `gorm:"constraint:OnUpdate:CASCADE"`
 }
 
 func (User) TableName() string { return "users" }
@@ -44,7 +44,7 @@ type Character struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	// Has many guides
-	Guides []Guide `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Guides []Guide `gorm:"constraint:OnUpdate:CASCADE"`
 }
 
 func (Character) TableName() string { return "characters" }
@@ -91,7 +91,7 @@ type Event struct {
 	User   User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 
 	// Has many LastEvents
-	LastEvents []LastEvent `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	LastEvents []LastEvent `gorm:"constraint:OnUpdate:CASCADE"`
 }
 
 func (Event) TableName() string { return "events" }
