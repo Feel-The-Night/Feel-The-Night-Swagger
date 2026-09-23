@@ -105,11 +105,9 @@ func createConstraints() error {
     END $$;`,
 	}
 
-	for _, f := range fks {
-		if !m.HasConstraint(f.model, f.field) {
-			if err := m.CreateConstraint(f.model, f.field); err != nil {
-				return fmt.Errorf("erro criando constraint %s.%s: %w", fmt.Sprintf("%T", f.model), f.field, err)
-			}
+	for _, sql := range constraints {
+		if err := DB.Exec(sql).Error; err != nil {
+			return fmt.Errorf("erro ao criar constraint: %w", err)
 		}
 	}
 	return nil
